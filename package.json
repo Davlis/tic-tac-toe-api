@@ -1,0 +1,52 @@
+{
+  "name": "tic-tac-toe-api",
+  "version": "0.0.1",
+  "description": "Implementation of tic-tac-toe api",
+  "main": "server.js",
+  "scripts": {
+    "test": "npm run test",
+    "build": "babel src -d dist",
+    "start": "node --harmony dist/server",
+    "watch": "babel -w src -d dist"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Davlis/tic-tac-toe-api.git"
+  },
+  "keywords": [
+    "tic-tac-toe",
+    "tic",
+    "tac",
+    "toe",
+    "api",
+    "server",
+    "nodejs"
+  ],
+  "author": "Dawid Liszka",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Davlis/tic-tac-toe-api/issues"
+  },
+  "homepage": "https://github.com/Davlis/tic-tac-toe-api#readme",
+  "babel": {
+    "plugins": [
+      "transform-es2015-modules-commonjs"
+    ]
+  },
+  "dependencies": {
+    "babel-plugin-transform-es2015-modules-commonjs": "^6.24.1",
+    "body-parser": "^1.18.2",
+    "cors": "^2.8.4",
+    "crypto": "^1.0.1",
+    "dotenv": "^4.0.0",
+    "express": "^4.16.2",
+    "jsonwebtoken": "^8.1.0",
+    "morgan": "^1.9.0",
+    "pg": "^7.3.0",
+    "pg-hstore": "^2.3.2",
+    "sequelize": "^4.13.15"
+  },
+  "devDependencies": {
+    "nodemon": "^1.12.1"
+  }
+}
