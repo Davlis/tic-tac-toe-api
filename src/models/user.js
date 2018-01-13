@@ -8,17 +8,6 @@ const SCHEMA = {
         primaryKey: true,
         defaultValue: DataTypes.UUIDV4,
     },
-    firstName: {
-        type: DataTypes.STRING
-    },
-    lastName: {
-        type: DataTypes.STRING
-    },
-    passhash: {
-        type: DataTypes.STRING(128),
-        allowNull: true,
-        get() { return undefined },
-    },
     email: {
         type: DataTypes.STRING(511),
         allowNull: false,
@@ -37,7 +26,15 @@ const SCHEMA = {
                 }
             },
         },
-    }
+    },
+    nickname: {
+        type: DataTypes.STRING,
+    },
+    passhash: {
+        type: DataTypes.STRING(128),
+        allowNull: true,
+        get() { return undefined },
+    },
 }
 
 export default function(sequelize) {

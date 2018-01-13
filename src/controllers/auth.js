@@ -20,21 +20,20 @@ export async function login(req, res) {
 
     const token = User.getAuthToken(email, config.salt)
 
-    res.send({ user, token })       
+    res.send({ user, token })
 }
 
 export async function register(req, res) {
     const config = res.app.get('config')
-    const { email, password, lastName, firstName } = req.body
+    const { email, nickname, password, } = req.body
     const { User } = req.app.get('models')
 
     const passhash = User.hashPassword(password, config.salt)
 
     const user = await User.create({
         email,
+        nickname,
         password,
-        lastName,
-        firstName,
         passhash,
     })
 
