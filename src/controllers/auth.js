@@ -18,7 +18,7 @@ export async function login(req, res) {
         Error,
         'Invalid password')
 
-    const token = User.getAuthToken(email, config.salt)
+    const token = User.getAuthToken(user.id, config.salt)
 
     res.send({ user, token })
 }

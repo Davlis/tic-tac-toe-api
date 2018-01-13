@@ -1,4 +1,5 @@
 import express from 'express'
+import io from 'socket.io'
 import cors from 'cors'
 import bodyParser from 'body-parser'
 import morgan from 'morgan'
@@ -34,6 +35,8 @@ export default function initApp(config, depedencies) {
         extended: false,
         parameterLimit: 1000000 }))
     app.use(bodyParser.json({ limit: '12mb' }))
+
+    app.io = io()
 
     app.use(router)
 

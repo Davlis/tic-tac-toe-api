@@ -21,6 +21,7 @@ const SCHEMA = {
     },
     isFull: {
         type: DataTypes.BOOLEAN,
+        defaultValue: false,
     },
     fkOwner: {
         type: DataTypes.UUID,

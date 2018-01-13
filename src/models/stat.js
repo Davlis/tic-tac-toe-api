@@ -29,12 +29,12 @@ const SCHEMA = {
 }
 
 export default function(sequelize) {
-    const Stats = sequelize.define('stats', SCHEMA);
-    Stats.sync()
+    const Stat = sequelize.define('stats', SCHEMA);
+    Stat.sync()
 
-    Stats.associate = function({ User }) {
-        Stats.belongsTo(User, { foreignKey: 'fkUserId' })
+    Stat.associate = function({ User }) {
+        Stat.belongsTo(User, { foreignKey: 'fkUserId' })
     }
 
-    return Stats
+    return Stat
 }

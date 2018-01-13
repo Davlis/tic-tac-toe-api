@@ -51,9 +51,9 @@ export default function(sequelize) {
             .digest('hex')
     }
 
-    User.getAuthToken = (email, salt) => {
+    User.getAuthToken = (id, salt) => {
         return jwt.sign({
-            email,
+            id,
         }, salt)
     }
 

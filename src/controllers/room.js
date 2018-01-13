@@ -1,7 +1,22 @@
-import { assertOrThrow } from '../utils'
+import { assertOrThrow, pick } from '../utils'
 
 export async function createRoom(req, res) {
-    res.send('NOT IMPLEMENTED.')
+
+    const sequelize = req.app.get('sequelize')
+    const { User, Room, Stat } = req.app.get('models')
+    const { user } = res.locals
+
+    const input = pick(req.body, 'name type')
+
+    const room = await Room.create({
+        name: input.name,
+        type: input.type,
+        fkOwner: user.id,
+    })
+
+    req.app.io.emit('NEW ROOM')
+
+    res.send(room)
 }
 
 export async function joinRoom(req, res) {
