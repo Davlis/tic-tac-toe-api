@@ -18,9 +18,13 @@ export async function getInvitationLink(req, res) {
 
 export async function getPublicRooms(req, res) {
 
-    console.log(res.locals.user)
+    const { Room } = req.app.get('models')
 
-    res.send('NOT IMPLEMENTED.')
+    const rooms = await Room.findAll({
+        type: Room.ROOM_TYPES.PUBLIC,
+    })
+
+    res.send(rooms)
 }
 
 export async function removeRoom(req, res) {

@@ -1,5 +1,10 @@
 import { DataTypes } from 'sequelize'
 
+const ROOM_TYPES = {
+    PRIVATE: 'private',
+    PUBLIC: 'public',
+}
+
 const SCHEMA = {
     id: {
         type: DataTypes.UUID,
@@ -11,7 +16,7 @@ const SCHEMA = {
         allowNull: false,
     },
     type: {
-        type: DataTypes.STRING,
+        type: DataTypes.ENUM(Object.values(ROOM_TYPES)),
         allowNull: false,
     },
     isFull: {
@@ -34,6 +39,8 @@ export default function(sequelize) {
     Room.associate = function({ User }) {
         Room.belongsTo(User, { foreignKey: 'fkOwner' })
     }
+
+    Room.ROOM_TYPES = ROOM_TYPES
 
     return Room
 }
