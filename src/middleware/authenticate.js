@@ -1,9 +1,12 @@
 import jwt from 'jsonwebtoken'
+import { assertOrThrow } from '../utils'
 
 export default function authenticate(req, res, next) {
     const config = res.app.get('config')
     const { authorization } = req.headers
     let user
+
+    assertOrThrow(authorization, Error, 'Authorization header missing')
 
     if (authorization.includes('Bearer ')) {
         const token = authorization.replace('Bearer ', '')
