@@ -30,7 +30,6 @@ const SCHEMA = {
 
 export default function(sequelize) {
     const Stat = sequelize.define('stats', SCHEMA);
-    Stat.sync()
 
     Stat.associate = function({ User }) {
         Stat.belongsTo(User, { foreignKey: 'fkUserId' })

@@ -16,7 +16,7 @@ const SCHEMA = {
         allowNull: false,
     },
     type: {
-        type: DataTypes.ENUM(Object.values(ROOM_TYPES)),
+        type: DataTypes.STRING,
         allowNull: false,
     },
     isFull: {
@@ -35,7 +35,6 @@ const SCHEMA = {
 
 export default function(sequelize) {
     const Room = sequelize.define('room', SCHEMA);
-    Room.sync()
 
     Room.associate = function({ User }) {
         Room.belongsTo(User, { foreignKey: 'fkOwner' })

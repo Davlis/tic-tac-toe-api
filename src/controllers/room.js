@@ -33,10 +33,11 @@ export async function getInvitationLink(req, res) {
 
 export async function getPublicRooms(req, res) {
 
-    const { Room } = req.app.get('models')
+    const { Room, User } = req.app.get('models')
 
     const rooms = await Room.findAll({
         type: Room.ROOM_TYPES.PUBLIC,
+        include: [User,],
     })
 
     res.send(rooms)

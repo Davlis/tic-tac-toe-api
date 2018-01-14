@@ -55,5 +55,7 @@ export default function initApp(config, depedencies) {
         })
     })
 
+    //depedencies.sequelize.sync({force: true})
+
     return app;
 }

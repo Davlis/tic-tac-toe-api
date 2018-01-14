@@ -39,10 +39,9 @@ const SCHEMA = {
 
 export default function(sequelize) {
     const User = sequelize.define('user', SCHEMA);
-    User.sync()
 
-    User.associate = function({ Stats }) {
-        // TODO
+    User.associate = function({ Stat, Room }) {
+        User.hasOne(Room)
     }
 
     User.hashPassword = (password, salt) => {
