@@ -14,17 +14,39 @@ export async function createRoom(req, res) {
         fkOwner: user.id,
     })
 
-    req.app.io.emit('NEW ROOM')
+    const ownerInformation = await User.findById(user.id)
 
+    req.app.io.emit('roomCreated', {room, ownerInformation})
     res.send(room)
 }
 
 export async function joinRoom(req, res) {
-    res.send('NOT IMPLEMENTED.')
+
+    const { roomId } = req.params
+
+    const room = await Room.findById(roomId)
+
+    assertOrThrow(room, Error, 'Room not found')
+    assertOrThrow(!room.isFull, Error, 'Room is full')
+
+    req.app.io.emit('joinRoom', roomId)
+    res.send('ok')
 }
 
 export async function leaveRoom(req, res) {
-    res.send('NOT IMPLEMENTED.')
+
+    const { roomId } = req.params
+
+    const room = await Room.findById(roomId)
+
+    assertOrThrow(room, Error, 'Room not found')
+
+    room.isFull = false
+
+    room.save()
+
+    req.app.io.emit('leaveRoom', roomId)
+    res.send('ok')
 }
 
 export async function getInvitationLink(req, res) {
@@ -44,7 +66,22 @@ export async function getPublicRooms(req, res) {
 }
 
 export async function removeRoom(req, res) {
-    res.send('NOT IMPLEMENTED.')
+
+    const sequelize = req.app.get('sequelize')
+    const { User, Room } = req.app.get('models')
+    const { user } = res.locals
+
+    const { roomId } = req.params
+
+    const room = await Room.findById(roomId)
+
+    assertOrThrow(room, Error, 'Room not found')
+
+    await room.destroy()
+
+    req.app.io.emit('roomRemove', {room})
+
+    res.send('ok')
 }
 
 export async function startGame(req, res) {

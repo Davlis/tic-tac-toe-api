@@ -3,7 +3,9 @@ import io from 'socket.io'
 import cors from 'cors'
 import bodyParser from 'body-parser'
 import morgan from 'morgan'
+import http from 'http'
 import router from './routes'
+import initEvents from './events'
 import generateConfig from './config'
 import initSequelize from './database'
 
@@ -16,7 +18,16 @@ const depedencies = { sequelize, models }
 
 const app = initApp(config, depedencies)
 
-app.listen(config.port, () => {
+const server = http.createServer(app)
+
+const _io = io.listen(server)
+
+app.io = _io
+
+server.listen(config.port, () => {
+
+    initEvents(_io)
+
     console.log(`App listening on port ${config.port}!`)
 })
 
@@ -35,8 +46,6 @@ export default function initApp(config, depedencies) {
         extended: false,
         parameterLimit: 1000000 }))
     app.use(bodyParser.json({ limit: '12mb' }))
-
-    app.io = io()
 
     app.use(router)
 
