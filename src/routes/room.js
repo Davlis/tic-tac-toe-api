@@ -6,7 +6,7 @@ const router = Router();
 
 router.post('/', errorWrap(roomController.createRoom))
 router.get('/:id', errorWrap(roomController.getRoom))
-router.post('/join', errorWrap(roomController.joinRoom))
+router.post('/join/:roomId', errorWrap(roomController.joinRoom))
 router.post('/leave', errorWrap(roomController.leaveRoom))
 router.get('/link', errorWrap(roomController.getInvitationLink))
 router.get('/', errorWrap(roomController.getPublicRooms))

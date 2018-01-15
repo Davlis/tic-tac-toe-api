@@ -37,15 +37,27 @@ export async function getRoom(req, res) {
 }
 
 export async function joinRoom(req, res) {
-
+    const { Room } = req.app.get('models')
     const { roomId } = req.params
+    const { user } = res.locals
+    const { socketId } = req.body
 
     const room = await Room.findById(roomId)
 
     assertOrThrow(room, Error, 'Room not found')
     assertOrThrow(!room.isFull, Error, 'Room is full')
 
-    req.app.io.emit('joinRoom', roomId)
+    let socket
+
+    for (const _socketId in req.app.io.sockets.sockets) {
+        if (socketId === _socketId) {
+            socket = req.app.io.sockets.sockets[_socketId]
+            break
+        }
+    }
+
+    socket.join(roomId)
+    req.app.io.sockets.in(roomId).emit('roomJoin', user)
     res.send('ok')
 }
 
@@ -62,14 +74,14 @@ export async function leaveRoom(req, res) {
     if (room.fkOwner.toString() === user.id.toString()) {
         await room.destroy()
 
-        req.app.io.emit('roomDestroy', roomId)
+        req.app.io.sockets.in(roomId).emit('roomDestroy', roomId)
         res.send('ok')
     } else {
         room.isFull = false
 
         await room.save()
 
-        req.app.io.emit('leaveRoom', roomId)
+        req.app.io.sockets.in(roomId).emit('roomLeave', user)
         res.send('ok')
     }
 }
