@@ -4,6 +4,7 @@ export async function createRoom(req, res) {
 
     const { User, Room, Stat } = req.app.get('models')
     const { user } = res.locals
+    const socketId = req.body.socketId
 
     const input = pick(req.body, 'name type')
 
@@ -13,9 +14,18 @@ export async function createRoom(req, res) {
         fkOwner: user.id,
     })
 
-    const ownerInformation = await User.findById(user.id, {include: [Stat]})
+    let socket
 
-    req.app.io.emit('roomCreated', {room, ownerInformation})
+    for (const _socketId in req.app.io.sockets.sockets) {
+        if (socketId === _socketId) {
+            socket = req.app.io.sockets.sockets[_socketId]
+            break
+        }
+    }
+
+    socket.owner = true
+    socket.join(room.id)
+    
     res.send(room)
 }
 
@@ -37,10 +47,10 @@ export async function getRoom(req, res) {
 }
 
 export async function joinRoom(req, res) {
-    const { Room } = req.app.get('models')
+    const { Room, User, Stat } = req.app.get('models')
     const { roomId } = req.params
-    const { user } = res.locals
     const { socketId } = req.body
+    const { user } = res.locals
 
     const room = await Room.findById(roomId)
 
@@ -56,8 +66,10 @@ export async function joinRoom(req, res) {
         }
     }
 
+    const userInformation = await User.findById(user.id, {include: [Stat]})
+
     socket.join(roomId)
-    req.app.io.sockets.in(roomId).emit('roomJoin', user)
+    req.app.io.sockets.in(roomId).emit('roomJoin', userInformation)
     res.send('ok')
 }
 
