@@ -2,7 +2,6 @@ import { assertOrThrow, pick } from '../utils'
 
 export async function createRoom(req, res) {
 
-    const sequelize = req.app.get('sequelize')
     const { User, Room, Stat } = req.app.get('models')
     const { user } = res.locals
 
@@ -17,6 +16,16 @@ export async function createRoom(req, res) {
     const ownerInformation = await User.findById(user.id)
 
     req.app.io.emit('roomCreated', {room, ownerInformation})
+    res.send(room)
+}
+
+export async function getRoom(req, res) {
+    const { User, Room } = req.app.get('models')
+
+    const { roomId } = req.params
+
+    const room = await Room.findById(roomId, {include: [User]})
+
     res.send(room)
 }
 
@@ -35,7 +44,9 @@ export async function joinRoom(req, res) {
 
 export async function leaveRoom(req, res) {
 
-    const { roomId } = req.params
+    const { Room, User } = req.app.get('models')
+
+    const { roomId } = req.body
 
     const room = await Room.findById(roomId)
 
@@ -43,7 +54,7 @@ export async function leaveRoom(req, res) {
 
     room.isFull = false
 
-    room.save()
+    await room.save()
 
     req.app.io.emit('leaveRoom', roomId)
     res.send('ok')
@@ -67,7 +78,6 @@ export async function getPublicRooms(req, res) {
 
 export async function removeRoom(req, res) {
 
-    const sequelize = req.app.get('sequelize')
     const { User, Room } = req.app.get('models')
     const { user } = res.locals
 
@@ -80,7 +90,6 @@ export async function removeRoom(req, res) {
     await room.destroy()
 
     req.app.io.emit('roomRemove', {room})
-
     res.send('ok')
 }
 
