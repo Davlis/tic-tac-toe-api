@@ -45,19 +45,26 @@ export async function joinRoom(req, res) {
 export async function leaveRoom(req, res) {
 
     const { Room, User } = req.app.get('models')
-
     const { roomId } = req.body
+    const { user } = res.locals
 
     const room = await Room.findById(roomId)
 
     assertOrThrow(room, Error, 'Room not found')
 
-    room.isFull = false
+    if (room.fkOwner.toString() === user.id.toString()) {
+        await room.destroy()
 
-    await room.save()
+        req.app.io.emit('roomDestroy', roomId)
+        res.send('ok')
+    } else {
+        room.isFull = false
 
-    req.app.io.emit('leaveRoom', roomId)
-    res.send('ok')
+        await room.save()
+
+        req.app.io.emit('leaveRoom', roomId)
+        res.send('ok')
+    }
 }
 
 export async function getInvitationLink(req, res) {
