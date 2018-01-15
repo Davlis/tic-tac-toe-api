@@ -4,10 +4,7 @@ export default async function initialize(io) {
 
     io.on('connection', socket => {
 
-        console.log('user connected', socket)
-
         socket.on('roomLeave', id => {
-            console.log('ROOM LEAVE', id);
             socket.leave(id)
         })
 

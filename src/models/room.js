@@ -40,8 +40,11 @@ export default function(sequelize) {
         Room.belongsTo(User, { foreignKey: 'fkOwner' })
     }
 
-    Room.isOwner = function(userId, room) {
-        return room.fkOwner === userId
+    Room.prototype.isOwner = function(userId) {
+
+        console.log(this.fkOwner.toString() === userId.toString())
+
+        return this.fkOwner.toString() === userId.toString()
     }
 
     Room.ROOM_TYPES = ROOM_TYPES

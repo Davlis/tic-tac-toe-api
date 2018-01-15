@@ -90,11 +90,10 @@ export async function leaveRoom(req, res) {
     if (room.fkOwner.toString() === user.id.toString()) {
         await room.destroy()
 
-        req.app.io.sockets.in(roomId).emit('roomDestroy', roomId)
+        req.app.io.sockets.in(roomId).emit('roomDestroy')
         
         req.app.io.sockets.in(roomId).clients((err, clients) => {
             for (let i = 0; i < clients.length; ++i) {
-                console.log(clients[i], roomId)
                 req.app.io.sockets.sockets[clients[i]].leave(roomId)
             }
         })
@@ -149,7 +148,11 @@ export async function startGame(req, res) {
     const { roomId } = req.params
     const { user } = res.locals
 
-    assertOrThrow(!Room.isOwner(user.id), Error, 'Only owner of room can start game.')
+    const room = await Room.findById(roomId)
+
+    assertOrThrow(room, Error, 'Room not found')
+
+    assertOrThrow(room.isOwner(user.id), Error, 'Only owner of room can start game')
 
     req.app.io.sockets.in(roomId).emit('startGame')
     res.send('ok')
