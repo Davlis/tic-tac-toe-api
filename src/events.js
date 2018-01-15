@@ -4,13 +4,15 @@ export default async function initialize(io) {
 
     io.on('connection', socket => {
 
-        socket.on('roomJoin', data => {
-            socket.join(data.room)
-            io.sockets.in(data.room).emit('roomJoin', data.user)
-        })
+        console.log('user connected', socket)
 
         socket.on('roomLeave', id => {
+            console.log('ROOM LEAVE', id);
             socket.leave(id)
+        })
+
+        socket.on('disconnect', () => {
+          console.log('user disconnected')
         })
 
     })

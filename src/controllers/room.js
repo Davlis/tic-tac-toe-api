@@ -25,7 +25,7 @@ export async function createRoom(req, res) {
 
     socket.owner = true
     socket.join(room.id)
-    
+
     res.send(room)
 }
 
@@ -66,7 +66,11 @@ export async function joinRoom(req, res) {
         }
     }
 
-    const userInformation = await User.findById(user.id, {include: [Stat]})
+    let userInformation = await User.findById(user.id, {include: [Stat]})
+    const stat = await Stat.getStatsByUserId(user.id)
+
+    userInformation = JSON.parse(JSON.stringify(userInformation))
+    userInformation.stat = stat
 
     socket.join(roomId)
     req.app.io.sockets.in(roomId).emit('roomJoin', userInformation)
@@ -87,6 +91,14 @@ export async function leaveRoom(req, res) {
         await room.destroy()
 
         req.app.io.sockets.in(roomId).emit('roomDestroy', roomId)
+        
+        req.app.io.sockets.in(roomId).clients((err, clients) => {
+            for (let i = 0; i < clients.length; ++i) {
+                console.log(clients[i], roomId)
+                req.app.io.sockets.sockets[clients[i]].leave(roomId)
+            }
+        })
+
         res.send('ok')
     } else {
         room.isFull = false
@@ -132,5 +144,13 @@ export async function removeRoom(req, res) {
 }
 
 export async function startGame(req, res) {
-    res.send('NOT IMPLEMENTED.')
+    
+    const { User, Room } = req.app.get('models')
+    const { roomId } = req.params
+    const { user } = res.locals
+
+    assertOrThrow(!Room.isOwner(user.id), Error, 'Only owner of room can start game.')
+
+    req.app.io.sockets.in(roomId).emit('startGame')
+    res.send('ok')
 }
