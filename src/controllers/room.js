@@ -34,14 +34,17 @@ export async function getRoom(req, res) {
     const { id } = req.params
     const { user } = res.locals
 
-    let room = await Room.findById(id, {include: [User]})
+    let room = await Room.findById(id, {
+        include: [
+            {all: true}
+        ]
+    })
 
     assertOrThrow(room, Error, 'Room not found')
 
     const stats = await Stat.getStatsByUserId(user.id)
-
     room = JSON.parse(JSON.stringify(room))
-    room.user.stats = stats
+    room.owner.stats = stats
 
     res.send(room)
 }
@@ -58,6 +61,7 @@ export async function joinRoom(req, res) {
     assertOrThrow(!room.isFull, Error, 'Room is full')
 
     room.isFull = true
+    room.fkGuest = user.id
     await room.save()
 
     let socket
@@ -70,7 +74,6 @@ export async function joinRoom(req, res) {
     }
 
     let userInformation = await User.findById(user.id, {include: [Stat]})
-
     const stat = await Stat.getStatsByUserId(user.id)
 
     userInformation = JSON.parse(JSON.stringify(userInformation))
@@ -106,6 +109,7 @@ export async function leaveRoom(req, res) {
         res.send('ok')
     } else {
         room.isFull = false
+        room.fkGuest = null
 
         await room.save()
 
@@ -123,8 +127,12 @@ export async function getPublicRooms(req, res) {
     const { Room, User } = req.app.get('models')
 
     const rooms = await Room.findAll({
-        type: Room.ROOM_TYPES.PUBLIC,
-        include: [User,],
+        where: {
+            type: Room.ROOM_TYPES.PUBLIC,
+        },
+        include: [{
+            all: true
+        }],
     })
 
     res.send(rooms)

@@ -23,6 +23,14 @@ const SCHEMA = {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
     },
+    fkGuest: {
+        type: DataTypes.UUID,
+        allowNull: true,
+        references: {
+            model: 'users',
+            key: 'id',
+        }
+    },
     fkOwner: {
         type: DataTypes.UUID,
         allowNull: false,
@@ -37,13 +45,11 @@ export default function(sequelize) {
     const Room = sequelize.define('room', SCHEMA);
 
     Room.associate = function({ User }) {
-        Room.belongsTo(User, { foreignKey: 'fkOwner' })
+        Room.belongsTo(User, { foreignKey: 'fkOwner', as:'owner'})
+        Room.belongsTo(User, { foreignKey: 'fkGuest', as:'guest'})
     }
 
     Room.prototype.isOwner = function(userId) {
-
-        console.log(this.fkOwner.toString() === userId.toString())
-
         return this.fkOwner.toString() === userId.toString()
     }
 

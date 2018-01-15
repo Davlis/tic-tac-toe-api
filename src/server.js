@@ -26,7 +26,7 @@ app.io = _io
 
 server.listen(config.port, () => {
 
-    initEvents(_io)
+    initEvents(_io, depedencies)
 
     console.log(`App listening on port ${config.port}!`)
 })

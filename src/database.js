@@ -2,6 +2,7 @@ import Sequelize from 'sequelize'
 import defineUser from './models/user'
 import defineRoom from './models/room'
 import defineStat from './models/stat'
+import defineUserConnection from './models/userConnection'
 
 export default function initSequelizeFromConfig(config) {
 
@@ -10,9 +11,10 @@ export default function initSequelizeFromConfig(config) {
 	})
 
 	const models = {
-	   User: defineUser(sequelize),
-	   Room: defineRoom(sequelize),
-     Stat: defineStat(sequelize),
+        User: defineUser(sequelize),
+        Room: defineRoom(sequelize),
+        Stat: defineStat(sequelize),
+        UserConnection: defineUserConnection(sequelize)
 	}
 
   Object.keys(models).forEach((name) => {
