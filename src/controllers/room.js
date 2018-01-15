@@ -72,6 +72,7 @@ export async function joinRoom(req, res) {
     userInformation = JSON.parse(JSON.stringify(userInformation))
     userInformation.stat = stat
 
+    socket.owner = false
     socket.join(roomId)
     req.app.io.sockets.in(roomId).emit('roomJoin', userInformation)
     res.send('ok')
@@ -151,6 +152,8 @@ export async function startGame(req, res) {
     const room = await Room.findById(roomId)
 
     assertOrThrow(room, Error, 'Room not found')
+
+    assertOrThrow(room.isFull, Error, 'Not enough players')
 
     assertOrThrow(room.isOwner(user.id), Error, 'Only owner of room can start game')
 
