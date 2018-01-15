@@ -35,5 +35,10 @@ export default function(sequelize) {
         Stat.belongsTo(User, { foreignKey: 'fkUserId' })
     }
 
+    Stat.getStatsByUserId = async function(userId) {
+        const stat = await Stat.findOne({fkUserId: userId})
+        return stat
+    }
+
     return Stat
 }

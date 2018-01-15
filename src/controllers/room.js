@@ -13,18 +13,25 @@ export async function createRoom(req, res) {
         fkOwner: user.id,
     })
 
-    const ownerInformation = await User.findById(user.id)
+    const ownerInformation = await User.findById(user.id, {include: [Stat]})
 
     req.app.io.emit('roomCreated', {room, ownerInformation})
     res.send(room)
 }
 
 export async function getRoom(req, res) {
-    const { User, Room } = req.app.get('models')
-
+    const { User, Room, Stat } = req.app.get('models')
     const { id } = req.params
+    const { user } = res.locals
 
-    const room = await Room.findById(id, {include: [User]})
+    let room = await Room.findById(id, {include: [User]})
+
+    assertOrThrow(room, Error, 'Room not found')
+
+    const stats = await Stat.getStatsByUserId(user.id)
+
+    room = JSON.parse(JSON.stringify(room))
+    room.user.stats = stats
 
     res.send(room)
 }

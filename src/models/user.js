@@ -42,6 +42,7 @@ export default function(sequelize) {
 
     User.associate = function({ Stat, Room }) {
         User.hasOne(Room)
+        User.hasOne(Stat)
     }
 
     User.hashPassword = (password, salt) => {
