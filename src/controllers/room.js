@@ -57,6 +57,9 @@ export async function joinRoom(req, res) {
     assertOrThrow(room, Error, 'Room not found')
     assertOrThrow(!room.isFull, Error, 'Room is full')
 
+    room.isFull = true
+    await room.save()
+
     let socket
 
     for (const _socketId in req.app.io.sockets.sockets) {
@@ -67,6 +70,7 @@ export async function joinRoom(req, res) {
     }
 
     let userInformation = await User.findById(user.id, {include: [Stat]})
+
     const stat = await Stat.getStatsByUserId(user.id)
 
     userInformation = JSON.parse(JSON.stringify(userInformation))
