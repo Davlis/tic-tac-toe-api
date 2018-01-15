@@ -22,9 +22,9 @@ export async function createRoom(req, res) {
 export async function getRoom(req, res) {
     const { User, Room } = req.app.get('models')
 
-    const { roomId } = req.params
+    const { id } = req.params
 
-    const room = await Room.findById(roomId, {include: [User]})
+    const room = await Room.findById(id, {include: [User]})
 
     res.send(room)
 }
