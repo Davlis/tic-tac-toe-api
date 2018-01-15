@@ -1,6 +1,8 @@
 import { assertOrThrow } from '../utils'
+import createUserStat from './stat'
 
 export async function login(req, res) {
+
     const config = res.app.get('config')
     const { email, password } = req.body
     const { User } = req.app.get('models')
@@ -24,9 +26,13 @@ export async function login(req, res) {
 }
 
 export async function register(req, res) {
+
+    const sequelize = req.app.get('sequelize')
     const config = res.app.get('config')
     const { email, nickname, password, } = req.body
-    const { User } = req.app.get('models')
+    const { User, Stat } = req.app.get('models')
+
+    const transaction = await sequelize.transaction()
 
     const passhash = User.hashPassword(password, config.salt)
 
@@ -35,7 +41,13 @@ export async function register(req, res) {
         nickname,
         password,
         passhash,
-    })
+    }, { transaction })
+
+    await Stat.create({
+        fkUserId: user.id,
+    }, { transaction })
+
+    await transaction.commit()
 
     res.send(user)
 }
