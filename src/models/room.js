@@ -44,6 +44,8 @@ const SCHEMA = {
 export default function(sequelize) {
     const Room = sequelize.define('room', SCHEMA);
 
+    //Room.sync({force: true})
+
     Room.associate = function({ User, Game }) {
         Room.belongsTo(User, { foreignKey: 'fkOwner', as:'owner'})
         Room.belongsTo(User, { foreignKey: 'fkGuest', as:'guest'})
