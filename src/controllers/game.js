@@ -1,19 +1,59 @@
 import { assertOrThrow } from '../utils'
 
-export const defaultState = {
-  history: [{
-    squares: Array(9).fill(null),
-  }],
-  current: Array(9).fill(null),
-  xIsNext: true,
-  stepNumber: 0,
-  canMove: false,
+export function checkWinner(state) {
+
+    const history = state.history.slice(0, state.stepNumber + 1);
+    const current = history[history.length - 1];
+    const squares = current.squares.slice();
+
+    const lines = [
+      [0, 1, 2],
+      [3, 4, 5],
+      [6, 7, 8],
+      [0, 3, 6],
+      [1, 4, 7],
+      [2, 5, 8],
+      [0, 4, 8],
+      [2, 4, 6],
+    ];
+
+    for(let i=0; i < lines.length; ++i) {
+      const [a, b, c] = lines[i];
+      if(squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
+        return squares[a];
+      }
+    }
+    return null;
 }
 
-export async function checkWinner() {
+export function checkDraw(state) {
+    const history = state.history.slice(0, state.stepNumber + 1);
+    const current = history[history.length - 1];
+    const squares = current.squares.slice();
+
+    for (const square of squares) {
+        if (!square) {
+            return false
+        }
+    }
+    return true
 }
 
 export async function canMove(req, res) {
+}
+
+export async function emitWin(socket) {
+    console.log('gameWin', socket)
+    socket.emit('gameWin')
+}
+
+export async function emitLose(socket) {
+    console.log('gameLose', socket)
+    socket.emit('gameLose')
+}
+
+export async function emitDraw(sockets) {
+    sockets.emit('gameDraw')
 }
 
 export async function newState(req, res) {
@@ -46,21 +86,35 @@ export async function newState(req, res) {
         nextUserSocket = await UserConnection.find({where: {userId: room.fkGuest}})
     }
 
-    req.app.io.sockets.sockets[nextUserSocket.socketId].emit('playerMove')   
+    if (checkWinner(state)) {
+        const winnerSocket = await UserConnection.find({where: {userId: user.id}})
+        emitWin(req.app.io.sockets.sockets[winnerSocket.socketId])
+        emitLose(req.app.io.sockets.sockets[nextUserSocket.socketId])
+    } else if (checkDraw(state)) {
+        emitDraw(req.app.io.sockets.in(room.id))
+    } else {
+        req.app.io.sockets.sockets[nextUserSocket.socketId].emit('playerMove')  
+    } 
+
     res.send({status: 'ok'})
 }
 
 export async function acknowledge(req, res) {
 
+    const sequelize = req.app.get('sequelize')
     const { User, Room, Game, UserConnection } = req.app.get('models')
     const { gameId } = req.params
     const { user } = res.locals
 
-    const game = await Game.findById(gameId)
+    const transaction = await sequelize.transaction({
+        isolationLevel: sequelize.Transaction.ISOLATION_LEVELS.READ_COMMITTED
+    })
+
+    const game = await Game.findById(gameId, {transaction})
 
     assertOrThrow(game, Error, 'Game not found')
 
-    const room = await Room.findById(game.roomId)
+    const room = await Room.findById(game.roomId, {transaction})
 
     assertOrThrow(room, Error, 'Room not found')
 
@@ -72,7 +126,9 @@ export async function acknowledge(req, res) {
         assertOrThrow(false, Error, 'Unathorized')
     }
 
-    await game.save()
+    await game.save({transaction})
+
+    await transaction.commit()
 
     if (game.ownerAck === true && game.guestAck === true) {
 
