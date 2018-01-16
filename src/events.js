@@ -26,6 +26,12 @@ export default async function initialize(io, depedencies) {
             try {
                 const user = await UserConnection.find({ where: { socketId: socket.id}})
 
+                if (!user) {
+                    return
+                }
+
+                await user.destroy()
+
                 const roomOwned = await Room.find({ where: { fkOwner: user.userId}})
 
                 if (roomOwned) {

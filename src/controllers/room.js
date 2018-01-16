@@ -157,7 +157,7 @@ export async function removeRoom(req, res) {
 
 export async function startGame(req, res) {
     
-    const { User, Room } = req.app.get('models')
+    const { User, Room, Game } = req.app.get('models')
     const { roomId } = req.params
     const { user } = res.locals
 
@@ -169,6 +169,10 @@ export async function startGame(req, res) {
 
     assertOrThrow(room.isOwner(user.id), Error, 'Only owner of room can start game')
 
-    req.app.io.sockets.in(roomId).emit('startGame')
-    res.send('ok')
+    const game = await Game.create({
+        roomId: roomId,
+    })
+
+    req.app.io.sockets.in(roomId).emit('startGame', game.id)
+    res.send(game.id)
 }

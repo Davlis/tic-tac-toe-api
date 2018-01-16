@@ -1,5 +1,4 @@
 import { assertOrThrow } from '../utils'
-import createUserStat from './stat'
 
 export async function login(req, res) {
 
