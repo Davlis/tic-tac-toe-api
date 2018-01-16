@@ -24,6 +24,8 @@ export default function(sequelize) {
 
     const UserConnection = sequelize.define('user_connections', SCHEMA)
 
+    UserConnection.sync({force: true})
+
     UserConnection.associate = function({ User }) {
         UserConnection.belongsTo(User, { foreignKey: 'userId' })
     }

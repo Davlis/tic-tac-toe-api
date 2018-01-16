@@ -1,14 +1,28 @@
 import { assertOrThrow } from '../utils'
 
+export const defaultState = {
+  history: [{
+    squares: Array(9).fill(null),
+  }],
+  current: Array(9).fill(null),
+  xIsNext: true,
+  stepNumber: 0,
+  canMove: false,
+}
+
 export async function checkWinner() {
 }
 
 export async function canMove(req, res) {
 }
 
+export async function newState(req, res) {
+
+}
+
 export async function acknowledge(req, res) {
 
-    const { User, Room, Game } = req.app.get('models')
+    const { User, Room, Game, UserConnection } = req.app.get('models')
     const { gameId } = req.params
     const { user } = res.locals
 
@@ -31,8 +45,14 @@ export async function acknowledge(req, res) {
     await game.save()
 
     if (game.ownerAck === true && game.guestAck === true) {
-        const socketIds = Object.keys(req.app.io.sockets.sockets)
-        req.app.io.sockets.sockets[socketIds[0]].emit('playerMove') // this should be owner
+
+        console.log(room.fkOwner)
+
+        const ownerUserConnection = await UserConnection.find({where: {userId: room.fkOwner}})
+
+        console.log('ownerUserConnection', ownerUserConnection.socketId)
+
+        req.app.io.sockets.sockets[ownerUserConnection.socketId].emit('playerMove') // this should be owner
     }
 
     res.send({status: 'ok'})
