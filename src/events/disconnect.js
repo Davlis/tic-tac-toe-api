@@ -1,4 +1,4 @@
-export default async function disconnect(models) {
+export default async function disconnect(socket, models) {
     const { UserConnection, Room, Game } = models
 
     try {
