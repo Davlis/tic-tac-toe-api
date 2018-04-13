@@ -1,7 +1,6 @@
 import { assertOrThrow } from '../utils'
 
 export async function getStats(req, res) {
-
     const sequelize = req.app.get('sequelize')
     const { Stat, User } = req.app.get('models')
 

@@ -14,6 +14,10 @@ const SCHEMA = {
         type: DataTypes.INTEGER,
         defaultValue: 0,
     },
+    draw: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
+    },
     ratio: {
         type: DataTypes.DOUBLE,
         defaultValue: 0.0,

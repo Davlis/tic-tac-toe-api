@@ -79,13 +79,13 @@ export async function newState(req, res) {
     let nextUserSocket
 
     if (room.fkGuest === user.id) {
-        nextUserSocket = await UserConnection.find({where: {userId: room.fkOwner}})
+        nextUserSocket = await UserConnection.find({ where: { userId: room.fkOwner } })
     } else {
-        nextUserSocket = await UserConnection.find({where: {userId: room.fkGuest}})
+        nextUserSocket = await UserConnection.find({ where: { userId: room.fkGuest } })
     }
 
     if (checkWinner(state)) {
-        const winnerSocket = await UserConnection.find({where: {userId: user.id}})
+        const winnerSocket = await UserConnection.find({ where: { userId: user.id } })
         emitWin(req.app.io.sockets.sockets[winnerSocket.socketId])
         emitLose(req.app.io.sockets.sockets[nextUserSocket.socketId])
     } else if (checkDraw(state)) {
@@ -94,57 +94,47 @@ export async function newState(req, res) {
         req.app.io.sockets.sockets[nextUserSocket.socketId].emit('playerMove')  
     } 
 
-    res.send({status: 'ok'})
+    res.send({ status: 'ok' })
 }
 
 export async function acknowledge(req, res) {
+    const sequelize = req.app.get('sequelize')
+    const { User, Room, Game, UserConnection } = req.app.get('models')
+    const { gameId } = req.params
+    const { user } = res.locals
 
-    try {
+    const transaction = await sequelize.transaction({
+        isolationLevel: sequelize.Transaction.ISOLATION_LEVELS.READ_COMMITED,
+        lock: sequelize.Transaction.LOCK.KEY_SHARE
+    })
 
-        const sequelize = req.app.get('sequelize')
-        const { User, Room, Game, UserConnection } = req.app.get('models')
-        const { gameId } = req.params
-        const { user } = res.locals
+    const game = await Game.findById(gameId, { transaction })
 
-        const transaction = await sequelize.transaction({
-            isolationLevel: sequelize.Transaction.ISOLATION_LEVELS.READ_COMMITED,
-            lock: sequelize.Transaction.LOCK.KEY_SHARE
-        })
+    assertOrThrow(game, Error, 'Game not found')
 
-        const game = await Game.findById(gameId, {transaction})
+    const room = await Room.findById(game.roomId, { transaction })
 
-        assertOrThrow(game, Error, 'Game not found')
+    assertOrThrow(room, Error, 'Room not found')
 
-        const room = await Room.findById(game.roomId, {transaction})
-
-        assertOrThrow(room, Error, 'Room not found')
-
-        if (room.fkOwner.toString() === user.id.toString()) {
-            game.ownerAck = true
-        } else if (room.fkGuest.toString() === user.id.toString()) {
-            game.guestAck = true
-        } else {
-            assertOrThrow(false, Error, 'Unathorized')
-        }
-
-        await game.save({transaction})
-
-        await transaction.commit()
-
-        if (game.ownerAck === true) {
-
-            const ownerUserConnection = await UserConnection.findOne({ 
-                    where: { userId: room.fkOwner },
-                    order: [['createdAt', 'DESC']],
-                })
-
-            req.app.io.sockets.sockets[ownerUserConnection.socketId].emit('playerMove') // this should be owner
-        }
-
-        res.send({status: 'ok'})
-
-    } catch (error) {
-        console.log(error)
-        throw  error;
+    if (room.fkOwner.toString() === user.id.toString()) {
+        game.ownerAck = true
+    } else if (room.fkGuest.toString() === user.id.toString()) {
+        game.guestAck = true
+    } else {
+        assertOrThrow(false, Error, 'Unathorized')
     }
+
+    await game.save({ transaction })
+
+    await transaction.commit()
+
+    if (game.ownerAck === true) {
+        const ownerUserConnection = await UserConnection.findOne({ 
+                where: { userId: room.fkOwner },
+                order: [['createdAt', 'DESC']],
+            })
+        req.app.io.sockets.sockets[ownerUserConnection.socketId].emit('playerMove') // this should be owner
+    }
+
+    res.send({ status: 'ok' })
 }

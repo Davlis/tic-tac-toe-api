@@ -27,13 +27,11 @@ const SCHEMA = {
 }
 
 export default function(sequelize) {
-
     const Game = sequelize.define('game', SCHEMA)
 
     Game.associate = function({ User, Room }) {
         Game.belongsTo(Room, { foreignKey: 'roomId',  as: 'room'})
     }
-
 
     return Game
 }

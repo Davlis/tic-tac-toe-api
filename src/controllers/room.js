@@ -81,7 +81,7 @@ export async function joinRoom(req, res) {
         }
     }
 
-    let userInformation = await User.findById(user.id, {include: [Stat]})
+    let userInformation = await User.findById(user.id, { include: [Stat] })
     const stat = await Stat.getStatsByUserId(user.id)
 
     userInformation = JSON.parse(JSON.stringify(userInformation))
@@ -94,7 +94,6 @@ export async function joinRoom(req, res) {
 }
 
 export async function leaveRoom(req, res) {
-
     const { Room, User } = req.app.get('models')
     const { roomId } = req.body
     const { user } = res.locals
@@ -131,7 +130,6 @@ export async function getInvitationLink(req, res) {
 }
 
 export async function getPublicRooms(req, res) {
-
     const { Room, User } = req.app.get('models')
 
     const rooms = await Room.findAll({
@@ -147,7 +145,6 @@ export async function getPublicRooms(req, res) {
 }
 
 export async function removeRoom(req, res) {
-
     const { User, Room } = req.app.get('models')
     const { user } = res.locals
 
@@ -164,7 +161,6 @@ export async function removeRoom(req, res) {
 }
 
 export async function startGame(req, res) {
-    
     const { User, Room, Game } = req.app.get('models')
     const { roomId } = req.params
     const { user } = res.locals
@@ -172,9 +168,7 @@ export async function startGame(req, res) {
     const room = await Room.findById(roomId)
 
     assertOrThrow(room, Error, 'Room not found')
-
     assertOrThrow(room.isFull, Error, 'Not enough players')
-
     assertOrThrow(room.isOwner(user.id), Error, 'Only owner of room can start game')
 
     const game = await Game.create({
