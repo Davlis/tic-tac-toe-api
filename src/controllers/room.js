@@ -35,7 +35,7 @@ export async function getRoom(req, res) {
 
     let room = await Room.findById(id, {
         include: [
-            { all: true }
+            'owner', 'guest'
         ]
     })
     assertOrThrow(room, Error, 'Room not found')
