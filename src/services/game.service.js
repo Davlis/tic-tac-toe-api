@@ -35,6 +35,10 @@ export function checkDraw(state) {
     return true
 }
 
+export function canMove() {
+    // TODO
+}
+
 export async function emitWin(socket) {
     socket.emit('gameWin')
 }

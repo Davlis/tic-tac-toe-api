@@ -14,6 +14,9 @@ const SCHEMA = {
             key: 'id',
         },
     },
+    states: {
+        type: DataTypes.JSON,
+    },
     ownerAck: {
         type: DataTypes.BOOLEAN,
         allowNull: false,
