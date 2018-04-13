@@ -34,9 +34,7 @@ export async function getRoom(req, res) {
     const { user } = res.locals
 
     let room = await Room.findById(id, {
-        include: [
-            'owner', 'guest'
-        ]
+        include: ['owner', 'guest']
     })
     assertOrThrow(room, Error, 'Room not found')
 
@@ -133,9 +131,7 @@ export async function getPublicRooms(req, res) {
         where: {
             type: Room.ROOM_TYPES.PUBLIC,
         },
-        include: [{
-            all: true
-        }],
+        include: ['owner', 'guest'],
     })
 
     res.send(rooms)
