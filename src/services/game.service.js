@@ -55,9 +55,9 @@ export async function endGameHandler(options, sockets) {
 
     if (type === 'win') {
         userStat.win += 1
-        userStat.ratio = userStat.win / userStat.lose
-        nextUserStat.lose += 1
-        nextUserStat.ratio = nextUserStat.win / nextUserStat.lose
+        userStat.ratio = userStat.win / userStat.lost
+        nextUserStat.lost += 1
+        nextUserStat.ratio = nextUserStat.win / nextUserStat.lost
         await userStat.save()
         await nextUserStat.save()
         emitWin(sockets[0])
