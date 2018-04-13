@@ -140,16 +140,14 @@ export async function getPublicRooms(req, res) {
 export async function removeRoom(req, res) {
     const { User, Room } = req.app.get('models')
     const { user } = res.locals
-
     const { roomId } = req.params
 
     const room = await Room.findById(roomId)
-
     assertOrThrow(room, Error, 'Room not found')
 
     await room.destroy()
+    req.app.io.emit('roomRemove', { room })
 
-    req.app.io.emit('roomRemove', {room})
     res.send('ok')
 }
 
