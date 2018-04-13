@@ -12,7 +12,7 @@ export default function authenticate(req, res, next) {
         const token = authorization.replace('Bearer ', '')
         try {
             user = jwt.verify(token, config.salt)
-        } catch(err) {
+        } catch (err) {
             throw new Error('Invalid token')
         }
 

@@ -30,6 +30,7 @@ export async function createRoom(req, res) {
 }
 
 export async function getRoom(req, res) {
+    
     const { User, Room, Stat } = req.app.get('models')
     const { id } = req.params
     const { user } = res.locals
@@ -43,6 +44,7 @@ export async function getRoom(req, res) {
     assertOrThrow(room, Error, 'Room not found')
 
     const stats = await Stat.getStatsByUserId(user.id)
+
     room = JSON.parse(JSON.stringify(room))
     room.owner.stats = stats
 

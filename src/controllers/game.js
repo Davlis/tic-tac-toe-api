@@ -43,12 +43,10 @@ export async function canMove(req, res) {
 }
 
 export async function emitWin(socket) {
-    console.log('gameWin', socket)
     socket.emit('gameWin')
 }
 
 export async function emitLose(socket) {
-    console.log('gameLose', socket)
     socket.emit('gameLose')
 }
 
@@ -101,41 +99,49 @@ export async function newState(req, res) {
 
 export async function acknowledge(req, res) {
 
-    const sequelize = req.app.get('sequelize')
-    const { User, Room, Game, UserConnection } = req.app.get('models')
-    const { gameId } = req.params
-    const { user } = res.locals
+    try {
 
-    const transaction = await sequelize.transaction({
-        isolationLevel: sequelize.Transaction.ISOLATION_LEVELS.READ_COMMITTED
-    })
+        const sequelize = req.app.get('sequelize')
+        const { User, Room, Game, UserConnection } = req.app.get('models')
+        const { gameId } = req.params
+        const { user } = res.locals
 
-    const game = await Game.findById(gameId, {transaction})
+        const transaction = await sequelize.transaction({
+            isolationLevel: sequelize.Transaction.ISOLATION_LEVELS.READ_COMMITED,
+            lock: sequelize.Transaction.LOCK.KEY_SHARE
+        })
 
-    assertOrThrow(game, Error, 'Game not found')
+        const game = await Game.findById(gameId, {transaction})
 
-    const room = await Room.findById(game.roomId, {transaction})
+        assertOrThrow(game, Error, 'Game not found')
 
-    assertOrThrow(room, Error, 'Room not found')
+        const room = await Room.findById(game.roomId, {transaction})
 
-    if (room.fkOwner.toString() === user.id.toString()) {
-        game.ownerAck = true
-    } else if (room.fkGuest.toString() === user.id.toString()) {
-        game.guestAck = true
-    } else {
-        assertOrThrow(false, Error, 'Unathorized')
+        assertOrThrow(room, Error, 'Room not found')
+
+        if (room.fkOwner.toString() === user.id.toString()) {
+            game.ownerAck = true
+        } else if (room.fkGuest.toString() === user.id.toString()) {
+            game.guestAck = true
+        } else {
+            assertOrThrow(false, Error, 'Unathorized')
+        }
+
+        await game.save({transaction})
+
+        await transaction.commit()
+
+        if (game.ownerAck === true) {
+
+            const ownerUserConnection = await UserConnection.find({ where: { userId: room.fkOwner }});
+
+            req.app.io.sockets.sockets[ownerUserConnection.socketId].emit('playerMove') // this should be owner
+        }
+
+        res.send({status: 'ok'})
+
+    } catch (error) {
+        console.log(error)
+        throw  error;
     }
-
-    await game.save({transaction})
-
-    await transaction.commit()
-
-    if (game.ownerAck === true && game.guestAck === true) {
-
-        const ownerUserConnection = await UserConnection.find({where: {userId: room.fkOwner}})
-
-        req.app.io.sockets.sockets[ownerUserConnection.socketId].emit('playerMove') // this should be owner
-    }
-
-    res.send({status: 'ok'})
 }

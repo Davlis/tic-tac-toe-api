@@ -36,7 +36,7 @@ export default function(sequelize) {
     }
 
     Stat.getStatsByUserId = async function(userId) {
-        const stat = await Stat.findOne({fkUserId: userId})
+        const stat = await Stat.findOne({ where: { fkUserId: userId } })
         return stat
     }
 
