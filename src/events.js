@@ -39,6 +39,7 @@ export default async function initialize(io, depedencies) {
 
                 if (roomOwned) {
                     await roomOwned.destroy()
+                    console.log(roomOwned.id)
                     io.sockets.in(roomOwned.id).emit('roomDestroy')
                 }
 
@@ -46,16 +47,10 @@ export default async function initialize(io, depedencies) {
 
                 if (roomJoined) {
                     roomJoined.isFull = false
+                    roomJoined.fkGuest = null
                     await roomJoined.save()
                     io.sockets.in(roomJoined.id).emit('roomLeave', user)
                 }
-
-
-                if  (roomOwned || roomJoined) {
-                    const roomId = roomOwned.id || roomJoined.id
-                    io.sockets.in(roomId).emit('gameLeft')
-                }
-
             } catch(err) {
                 console.error(err)
             }
