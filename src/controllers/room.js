@@ -61,6 +61,8 @@ export async function joinRoom(req, res) {
 
     assertOrThrow(room, Error, 'Room not found')
     assertOrThrow(!room.isFull, Error, 'Room is full')
+    assertOrThrow(room.fkGuest !== user.id, 'Room already joined')
+    assertOrThrow(room.fkOwner !== user.id, 'Room already joined')
 
     room.isFull = true
     room.fkGuest = user.id
