@@ -1,4 +1,4 @@
-export default async function storeClientId(socket, models, clientId) {
+export async function storeClientId(socket, models, clientId) {
     const { UserConnection } = models
     try {
         await UserConnection.create({

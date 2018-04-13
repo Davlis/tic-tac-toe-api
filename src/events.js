@@ -1,4 +1,4 @@
-import { disconnect, storeClientId } from './events'
+import { disconnect, storeClientId } from './event-handlers'
 
 export default async function initialize(io, depedencies) {
     const { sequelize, models } = depedencies
