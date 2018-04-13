@@ -57,8 +57,8 @@ export async function emitDraw(sockets) {
 export async function endGameHandler(options, sockets) {
     const { type, userId, nextUserId, Stat } = options;
 
-    const userStat = await Stat.findOne({ where: { id: userId } })
-    const nextUserStat = await Stat.findOne({ where: { id: nextUserId } })
+    const userStat = await Stat.findOne({ where: { fkUserId: userId } })
+    const nextUserStat = await Stat.findOne({ where: { fkUserId: nextUserId } })
     
     if (type === 'win') {
         userStat.win += 1
