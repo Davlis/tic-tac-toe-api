@@ -37,16 +37,20 @@ export async function getRoom(req, res) {
 
     let room = await Room.findById(id, {
         include: [
-            {all: true}
+            { all: true }
         ]
     })
 
     assertOrThrow(room, Error, 'Room not found')
 
-    const stats = await Stat.getStatsByUserId(user.id)
-
     room = JSON.parse(JSON.stringify(room))
-    room.owner.stats = stats
+
+    const ownerStats = await Stat.getStatsByUserId(room.fkOwner)
+    room.owner.stats = ownerStats
+    if (room.fkGuest) {
+        const guestStats = await Stat.getStatsByUserId(room.fkGuest)
+        room.guest.stats = guestStats
+    }
 
     res.send(room)
 }

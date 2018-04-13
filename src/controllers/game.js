@@ -133,7 +133,10 @@ export async function acknowledge(req, res) {
 
         if (game.ownerAck === true) {
 
-            const ownerUserConnection = await UserConnection.find({ where: { userId: room.fkOwner }});
+            const ownerUserConnection = await UserConnection.findOne({ 
+                    where: { userId: room.fkOwner },
+                    order: [['createdAt', 'DESC']],
+                })
 
             req.app.io.sockets.sockets[ownerUserConnection.socketId].emit('playerMove') // this should be owner
         }
