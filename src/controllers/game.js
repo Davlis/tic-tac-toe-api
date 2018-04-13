@@ -54,9 +54,32 @@ export async function emitDraw(sockets) {
     sockets.emit('gameDraw')
 }
 
-export async function newState(req, res) {
+export async function endGameHandler(options, sockets) {
+    const { type, userId, nextUserId, Stat } = options;
 
-    const { User, Room, Game, UserConnection } = req.app.get('models')
+    const userStat = await Stat.findOne({ where: { id: userId } })
+    const nextUserStat = await Stat.findOne({ where: { id: nextUserId } })
+    
+    if (type === 'win') {
+        userStat.win += 1
+        userStat.ratio = userStat.win / userStat.lose
+        nextUserStat.lose += 1
+        nextUserStat.ratio = nextUserStat.win / nextUserStat.lose
+        await userStat.save()
+        await nextUserStat.save()
+        emitWin(sockets[0])
+        emitLose(sockets[1])
+    } else if (type === 'draw') {
+        userStat.draw += 1
+        nextUserStat.draw += 1
+        await userStat.save()
+        await nextUserStat.save()
+        emitDraw(sockets)
+    }
+}
+
+export async function newState(req, res) {
+    const { User, Room, Game, UserConnection, Stat } = req.app.get('models')
     const { gameId } = req.params
     const { user } = res.locals
     const { state } = req.body
@@ -84,15 +107,27 @@ export async function newState(req, res) {
         nextUserSocket = await UserConnection.find({ where: { userId: room.fkGuest } })
     }
 
+    const endGameOptions = {
+        userId: user.id,
+        nextUserId: nextUserSocket.userId,
+        Stat
+    }
+
     if (checkWinner(state)) {
         const winnerSocket = await UserConnection.find({ where: { userId: user.id } })
-        emitWin(req.app.io.sockets.sockets[winnerSocket.socketId])
-        emitLose(req.app.io.sockets.sockets[nextUserSocket.socketId])
+        endGameOptions.type = 'win'
+        endGameHandler(endGameOptions, 
+            [
+                req.app.io.sockets.sockets[winnerSocket.socketId],
+                req.app.io.sockets.sockets[nextUserSocket.socketId]
+            ]
+        )
     } else if (checkDraw(state)) {
-        emitDraw(req.app.io.sockets.in(room.id))
+        endGameOptions.type = 'draw'
+        endGameHandler(endGameOptions, req.app.io.sockets.in(room.id))
     } else {
-        req.app.io.sockets.sockets[nextUserSocket.socketId].emit('playerMove')  
-    } 
+        req.app.io.sockets.sockets[nextUserSocket.socketId].emit('playerMove')
+    }
 
     res.send({ status: 'ok' })
 }
