@@ -85,7 +85,6 @@ export async function newState(req, res) {
     const { state } = req.body
 
     const game = await Game.findById(gameId)
-
     assertOrThrow(game, Error, 'Game not found')
 
     const room = await Room.find({
@@ -94,7 +93,6 @@ export async function newState(req, res) {
         },
         include: []
     })
-
     assertOrThrow(room, Error, 'Room not found')
 
     req.app.io.sockets.in(room.id).emit('newState', state)
@@ -144,11 +142,9 @@ export async function acknowledge(req, res) {
     })
 
     const game = await Game.findById(gameId, { transaction })
-
     assertOrThrow(game, Error, 'Game not found')
 
     const room = await Room.findById(game.roomId, { transaction })
-
     assertOrThrow(room, Error, 'Room not found')
 
     if (room.fkOwner.toString() === user.id.toString()) {

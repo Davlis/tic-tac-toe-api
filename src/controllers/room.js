@@ -1,7 +1,6 @@
 import { assertOrThrow, pick } from '../utils'
 
 export async function createRoom(req, res) {
-
     const { User, Room, Stat } = req.app.get('models')
     const { user } = res.locals
     const socketId = req.body.socketId
@@ -30,7 +29,6 @@ export async function createRoom(req, res) {
 }
 
 export async function getRoom(req, res) {
-    
     const { User, Room, Stat } = req.app.get('models')
     const { id } = req.params
     const { user } = res.locals
@@ -40,7 +38,6 @@ export async function getRoom(req, res) {
             { all: true }
         ]
     })
-
     assertOrThrow(room, Error, 'Room not found')
 
     room = JSON.parse(JSON.stringify(room))

@@ -1,7 +1,6 @@
 import { assertOrThrow } from '../utils'
 
 export async function login(req, res) {
-
     const config = res.app.get('config')
     const { email, password } = req.body
     const { User } = req.app.get('models')
@@ -13,7 +12,6 @@ export async function login(req, res) {
     })
 
     assertOrThrow(user, Error, 'User not found')
-
     assertOrThrow(
         user.getDataValue('passhash') === User.hashPassword(password, config.salt),
         Error,
@@ -25,7 +23,6 @@ export async function login(req, res) {
 }
 
 export async function register(req, res) {
-
     const sequelize = req.app.get('sequelize')
     const config = res.app.get('config')
     const { email, nickname, password, } = req.body

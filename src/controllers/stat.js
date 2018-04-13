@@ -11,14 +11,6 @@ export async function getStats(req, res) {
     res.send(stats)
 }
 
-export async function updateUserStat(req, userId, winIncrement) {
-    if (winIncrement) {
-
-    } else {
-
-    }
-}
-
 export async function createUserStat(user, transaction) {
     await Stat.create({
         fkUserId: user.id,
