@@ -14,7 +14,6 @@ export default async function disconnect(models) {
 
         if (roomOwned) {
             await roomOwned.destroy()
-            console.log(roomOwned.id)
             io.sockets.in(roomOwned.id).emit('roomDestroy')
         }
 
